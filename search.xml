@@ -437,7 +437,8 @@
   <entry>
     <title>蓝帽杯2022pwn题</title>
     <url>/2022/07/18/%E8%93%9D%E5%B8%BD%E6%9D%AF2022/</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<p>蓝帽杯2022 pwn题复现</p>
+<span id="more"></span>
 
 <h1 id="EscapeShellcode"><a href="#EscapeShellcode" class="headerlink" title="EscapeShellcode"></a>EscapeShellcode</h1><p><img src="https://c.img.dasctf.com/images/2022717/1658099627939-0c5757f2-5b07-4d0c-ad48-f719d31107e4.jpg"></p>
 <p>只允许read和write</p>
