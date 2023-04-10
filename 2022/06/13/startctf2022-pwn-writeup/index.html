@@ -27,19 +27,19 @@
 <meta property="og:site_name" content="Leof&#39;s blog">
 <meta property="og:description" content="*ctf 2022 pwn examination复现">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://s1.ax1x.com/2022/06/13/XWen61.jpg">
-<meta property="og:image" content="https://s1.ax1x.com/2022/06/13/XWnFG4.jpg">
-<meta property="og:image" content="https://s1.ax1x.com/2022/06/13/XWumlj.jpg">
-<meta property="og:image" content="https://s1.ax1x.com/2022/06/13/XWQl7t.jpg">
-<meta property="og:image" content="https://s1.ax1x.com/2022/06/13/XWQrNV.jpg">
-<meta property="og:image" content="https://s1.ax1x.com/2022/06/13/XWmC3d.jpg">
+<meta property="og:image" content="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918978.jpg">
+<meta property="og:image" content="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918367.jpg">
+<meta property="og:image" content="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918300.jpg">
+<meta property="og:image" content="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918754.jpg">
+<meta property="og:image" content="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918468.jpg">
+<meta property="og:image" content="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100919692.jpg">
 <meta property="article:published_time" content="2022-06-13T04:18:47.000Z">
-<meta property="article:modified_time" content="2023-03-31T14:57:12.280Z">
+<meta property="article:modified_time" content="2023-04-10T01:19:12.395Z">
 <meta property="article:author" content="Leof">
 <meta property="article:tag" content="pwn">
 <meta property="article:tag" content="startctf2022">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://s1.ax1x.com/2022/06/13/XWen61.jpg">
+<meta name="twitter:image" content="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918978.jpg">
 
 <link rel="canonical" href="http://example.com/2022/06/13/startctf2022-pwn-writeup/">
 
@@ -227,7 +227,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-03-31 22:57:12" itemprop="dateModified" datetime="2023-03-31T22:57:12+08:00">2023-03-31</time>
+                <time title="修改时间：2023-04-10 09:19:12" itemprop="dateModified" datetime="2023-04-10T09:19:12+08:00">2023-04-10</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -257,24 +257,24 @@
         <p>*ctf 2022 pwn examination复现</p>
 <span id="more"></span>
 
-<h1 id="examination"><a href="#examination" class="headerlink" title="examination"></a>examination</h1><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWen61"><img src="https://s1.ax1x.com/2022/06/13/XWen61.jpg" alt="XWen61.jpg"></a></p>
+<h1 id="examination"><a href="#examination" class="headerlink" title="examination"></a>examination</h1><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWen61"><img src="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918978.jpg" alt="XWen61.jpg"></a></p>
 <p>64位保护全开</p>
 <h2 id="程序分析"><a href="#程序分析" class="headerlink" title="程序分析"></a>程序分析</h2><p>程序分为两个用户，一个teacher一个student</p>
 <p>teacher可以添加学生，给学生打分、评论以及开除学生</p>
 <p>student可以查看评论，祈祷，等</p>
-<h3 id="add-student"><a href="#add-student" class="headerlink" title="add_student"></a>add_student</h3><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWnFG4"><img src="https://s1.ax1x.com/2022/06/13/XWnFG4.jpg" alt="XWnFG4.jpg"></a></p>
+<h3 id="add-student"><a href="#add-student" class="headerlink" title="add_student"></a>add_student</h3><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWnFG4"><img src="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918367.jpg" alt="XWnFG4.jpg"></a></p>
 <p>最多可以添加7个学生，程序会calloc两块堆块，0x20的堆块为head、0x18的为info</p>
 <p>head存放info结构体的地址，info结构体的内容为教师评分，分数，评论的大小，评论的内容</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">info</span>&#123;</span></span><br><span class="line">	<span class="type">int</span> number;</span><br><span class="line">	<span class="type">int</span> sorce;</span><br><span class="line">	<span class="type">int</span> review_size;</span><br><span class="line">	<span class="type">int</span>* review;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>然后head的地址存放在student数组中</p>
-<h3 id="give-sorce"><a href="#give-sorce" class="headerlink" title="give_sorce"></a>give_sorce</h3><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWumlj"><img src="https://s1.ax1x.com/2022/06/13/XWumlj.jpg" alt="XWumlj.jpg"></a></p>
+<h3 id="give-sorce"><a href="#give-sorce" class="headerlink" title="give_sorce"></a>give_sorce</h3><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWumlj"><img src="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918300.jpg" alt="XWumlj.jpg"></a></p>
 <p>这里v2是无符号整型，当<code>*(student_chunk[i] + 24LL) == 1</code>的时候进入if语句可造成整数溢出</p>
 <p>要让这个地址的值为1只需要执行下面这个函数就行</p>
-<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWQl7t"><img src="https://s1.ax1x.com/2022/06/13/XWQl7t.jpg" alt="XWQl7t.jpg"></a></p>
-<h3 id="write-review"><a href="#write-review" class="headerlink" title="write_review"></a>write_review</h3><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWQrNV"><img src="https://s1.ax1x.com/2022/06/13/XWQrNV.jpg" alt="XWQrNV.jpg"></a></p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWQl7t"><img src="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918754.jpg" alt="XWQl7t.jpg"></a></p>
+<h3 id="write-review"><a href="#write-review" class="headerlink" title="write_review"></a>write_review</h3><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWQrNV"><img src="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100918468.jpg" alt="XWQrNV.jpg"></a></p>
 <p>如果原本有就直接覆盖，没有的话输入指定范围内的size然后分配堆块写入内容</p>
-<h3 id="check-fo-review"><a href="#check-fo-review" class="headerlink" title="check_fo_review"></a>check_fo_review</h3><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWmC3d"><img src="https://s1.ax1x.com/2022/06/13/XWmC3d.jpg" alt="XWmC3d.jpg"></a></p>
+<h3 id="check-fo-review"><a href="#check-fo-review" class="headerlink" title="check_fo_review"></a>check_fo_review</h3><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XWmC3d"><img src="https://image-1306303065.cos.ap-nanjing.myqcloud.com/202304100919692.jpg" alt="XWmC3d.jpg"></a></p>
 <p>如果分数大于0x59可以打印堆地址并让一个任意地址加1，这里利用give_sorce的整数溢出即可得到一个很大的分数用来泄露堆地址</p>
 <h2 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h2><p>程序可以使任意地址加1，这里可以通过修改堆块的size来造成堆重叠然后泄露libc</p>
 <p>先添加两个学生，第一个学生的评论开辟0x380的空间，第二个学生的评论开辟0xa0的空间，泄露第一个学生的地址并修改地址+0x49即第一个学生评论的size位的3为4</p>
